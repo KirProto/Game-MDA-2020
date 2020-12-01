@@ -15,8 +15,10 @@ class GameViewController: UIViewController {
     let button = UIButton()
     
     // MARK: - Stored Propertis
+    var ship: SCNNode!
     var scene: SCNScene!
     var scnView: SCNView!
+
     
     // MARK: - Metods
     /// Adds a button to the scene veiw
@@ -34,15 +36,22 @@ class GameViewController: UIViewController {
         button.setTitle("Restart", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 40)
         
+        // Add action to the buuton
+        button.addTarget(self, action: #selector(newGame), for: .touchUpInside)
+        
         // Add button to the csene
         scnView.addSubview(button)
+    }
+    
+    func addShip() {
+        scene.rootNode.addChildNode(ship)
     }
     
     /// Clones new ship from the scene
     /// - Returns: SCNNode with the new ship
     func getShip() -> SCNNode {
         let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
+        ship = scene.rootNode.childNode(withName: "ship", recursively: true)!.clone()
         
         // Move ship far away
         let x = 25
@@ -53,14 +62,19 @@ class GameViewController: UIViewController {
         
         // Add snimation to move the ship to original
         ship.runAction(.move(to: SCNVector3(), duration: 5)) {
-            print(#line, #function)
-            ship.removeFromParentNode()
+            self.ship.removeFromParentNode()
             DispatchQueue.main.async {
             self.button.isHidden = false
             }
         }
         
-        return ship.clone()
+        return ship
+    }
+    
+    @objc func newGame() {
+        button.isHidden = true
+        ship = getShip()
+        addShip()
     }
     
     /// Finds and removes the ship from the scene
@@ -126,7 +140,7 @@ class GameViewController: UIViewController {
         
         // Add ship to the scene
         let ship = getShip()
-        scene.rootNode.addChildNode(ship)
+        addShip()
         
         // Add button
         addButton()
